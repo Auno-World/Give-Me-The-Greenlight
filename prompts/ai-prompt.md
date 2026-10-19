@@ -23,6 +23,8 @@ return ONLY a JSON object, with no other text, in exactly this shape:
   "approverRole": "",       // leave "" unless the document names one
   "effective": "On release",
   "keepAnswersDays": 7,
+  "totalPages": null,      // optional whole number of document pages, or null
+  "fullDocUrl": "",        // optional HTTP or HTTPS link to the full document
   "fictional": false,
   "lede": "",               // one or two sentences: what is ready and how long the review takes
   "summary": [["What It Does", ""], ["What Changes", ""], ["Impact On ...", ""]],
@@ -44,7 +46,7 @@ return ONLY a JSON object, with no other text, in exactly this shape:
     }
   ],
   "questions": [
-    { "stop": "c1", "q": "", "why": "" }   // one decision question per important change
+    { "id": "q1", "stop": "c1", "q": "", "why": "" }   // one decision question per important change
   ]
 }
 
@@ -56,6 +58,9 @@ Rules:
 - 3 to 6 changes, ordered as they appear in the document.
 - 3 to 5 questions, each linked to a change by its id, each answerable with
   Agree, Agree With Minor Adjustments, or Needs A Change.
+- Required fields docName, toRev, author, summary, steps, stops, and questions must be present and non-empty. Every change needs a unique id, a title, non-empty text, and a whole page number of 1 or more. Every question needs a unique id, non-empty text, and a stop id that exists in stops.
+- If totalPages is set, it must be a whole number at least as large as every change page. If fullDocUrl is set, it must be an HTTP or HTTPS link.
+- The Builder or Python script creates a reviewId once. Keep it when editing an existing review; do not make a new one for each revision of the file.
 - If something is unclear or missing, leave the field "" rather than guessing,
   and do not invent facts.
 - Return valid JSON only. No comments, no code fences, no explanation.

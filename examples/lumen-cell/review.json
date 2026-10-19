@@ -1,0 +1,160 @@
+{
+  "company": "Lumen Cell",
+  "docType": "Procedure",
+  "docName": "Incoming Cell Inspection Procedure",
+  "fromRev": "Rev B",
+  "toRev": "Rev C",
+  "author": "M. Okafor",
+  "authorRole": "Quality Engineering",
+  "approverRole": "",
+  "effective": "On release",
+  "keepAnswersDays": 7,
+  "fictional": true,
+  "lede": "Rev C is ready for your sign off. About ten minutes: read the summary, walk the five changes, answer four questions, then send your response to M. Okafor.",
+  "summary": [
+    [
+      "What It Does",
+      "Sets the checks every battery cell passes when it arrives, before it goes into an electric bike pack."
+    ],
+    [
+      "What Changes",
+      "A tighter batch check, a voltage test on every cell, a new residue check, and simpler records."
+    ],
+    [
+      "Impact On Inspectors",
+      "More cells checked per batch, and a batch stops the moment one bad cell is found."
+    ],
+    [
+      "Impact On Suppliers",
+      "Whole batches can come back, so suppliers need to fix causes, not single cells."
+    ],
+    [
+      "Training Needed",
+      "A short session on the voltage test, the wipe test, and the new batch record."
+    ]
+  ],
+  "steps": [
+    "Walk the five changes. Tap any page to see it full size.",
+    "Answer the four questions and pick your decision.",
+    "Copy your response or save it as a PDF, and send it to M. Okafor in Slack, Teams, or email."
+  ],
+  "stops": [
+    {
+      "id": "scope",
+      "section": "Section 1.1",
+      "page": 1,
+      "title": "What This Covers",
+      "text": [
+        "This procedure applies to every battery cell and every cell separator film received at Lumen Cell, from all approved suppliers and their sub-tier suppliers.",
+        "No cell or film batch may be moved to stock until it passes the checks in this procedure."
+      ],
+      "around": [
+        "1. Purpose and Scope",
+        "This procedure explains how incoming battery cells are checked before they are used to build electric bike battery packs."
+      ],
+      "look": [
+        "Separator film suppliers are now included, not only cell makers.",
+        "Sub-tier suppliers are covered, so a supplier's own vendors are in scope."
+      ],
+      "bottom": "Everything that goes inside a cell now passes the same gate."
+    },
+    {
+      "id": "sampling",
+      "section": "Section 6.2",
+      "page": 2,
+      "title": "How Many Cells We Check",
+      "text": [
+        "Pull a set number of cells from every batch: all cells for batches of 20 or fewer, 20 cells for batches of 21 to 100, and 32 cells for larger batches.",
+        "If even one sampled cell fails any check, the whole batch is rejected and set aside for review."
+      ],
+      "around": [
+        "6. Inspection",
+        "6.1 Record the supplier, batch number, and quantity received before opening any packaging."
+      ],
+      "look": [
+        "The sample size is fixed by batch size, so every inspector pulls the same number.",
+        "One bad cell rejects the whole batch. The old table allowed a few bad cells per batch."
+      ],
+      "bottom": "The old rule let the two problem batches through. This one would have stopped both."
+    },
+    {
+      "id": "voltage",
+      "section": "Section 6.3",
+      "page": 3,
+      "title": "Voltage Check",
+      "text": [
+        "Test the resting voltage of every sampled cell within 24 hours of arrival.",
+        "Reject any cell that reads below 3.60 volts or above 3.70 volts, and record each reading in the batch record."
+      ],
+      "around": [
+        "6.3 Voltage Check",
+        "Use the calibrated meter at the receiving bench. Let cells rest at room temperature for at least one hour before testing."
+      ],
+      "look": [
+        "Is a 24 hour window workable at the receiving bench?",
+        "Do the 3.60 to 3.70 volt limits match the cell maker's sheet?"
+      ],
+      "bottom": "Voltage is the fastest early sign of a damaged or mislabeled cell."
+    },
+    {
+      "id": "residue",
+      "section": "Section 6.4",
+      "page": 4,
+      "title": "Residue Check",
+      "text": [
+        "Look over each sampled cell for leaked liquid, staining, or swelling, then wipe the terminals with a clean dry swab.",
+        "Any wet or discolored swab rejects the batch."
+      ],
+      "around": [
+        "6.4 Residue Check",
+        "Wear nitrile gloves and eye protection. Dispose of used swabs in the marked bin."
+      ],
+      "look": [
+        "This is a new step. Nothing like it existed in Rev B.",
+        "The wipe test needs only a swab and takes under a minute per cell."
+      ],
+      "bottom": "Leaked liquid was the root cause of both returns. Now it is caught at the door."
+    },
+    {
+      "id": "records",
+      "section": "Section 7.1",
+      "page": 5,
+      "title": "Keeping Records",
+      "text": [
+        "Record every check in the batch record and keep it for 10 years.",
+        "The paper receiving log is retired. Results live only in the batch record."
+      ],
+      "around": [
+        "7. Records",
+        "7.2 Rejected batches are tagged red and moved to the hold area until reviewed."
+      ],
+      "look": [
+        "Is 10 years the right length of time?",
+        "Does the batch record capture everything the paper log did?"
+      ],
+      "bottom": "One record per batch, one place to look."
+    }
+  ],
+  "questions": [
+    {
+      "stop": "sampling",
+      "q": "Is the new batch check and rejection rule right?",
+      "why": "It is stricter, and suppliers will feel it."
+    },
+    {
+      "stop": "voltage",
+      "q": "Can every sampled cell be checked against these voltage limits?",
+      "why": "The bench needs the meter and time to do it."
+    },
+    {
+      "stop": "residue",
+      "q": "Is the residue check clear and workable?",
+      "why": "It is new, so inspectors will follow the words exactly."
+    },
+    {
+      "stop": "records",
+      "q": "Are the record changes ready to use?",
+      "why": "The batch record must hold the facts once the paper log ends."
+    }
+  ]
+}

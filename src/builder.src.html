@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-wall="aurora">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Review Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+__BASE_CSS__
+<style>
+/* Review Builder: fill in a review without touching code, then download the finished page. */
+.hero.split{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(220px,260px);gap:clamp(20px,3vw,36px);align-items:center}
+.hero.split::before{content:"";grid-column:2;grid-row:1;align-self:stretch;width:1px;background:linear-gradient(180deg,transparent,var(--glass-rim) 20%,var(--glass-rim) 80%,transparent)}
+.hero.split .intro{grid-column:1;grid-row:1}
+.hero.split .actions{grid-column:3;grid-row:1;display:flex;flex-direction:column;gap:10px}
+.hero.split .actions .pill{width:100%;justify-content:center}
+@media (max-width:820px){.hero.split{grid-template-columns:minmax(0,1fr)}.hero.split::before{display:none}.hero.split .actions{grid-column:1;grid-row:2}}
+.builder{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;align-items:start}
+.form{display:flex;flex-direction:column;gap:20px;min-width:0}
+.block{padding:clamp(20px,3vw,28px);display:flex;flex-direction:column;gap:16px}
+.block-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.block-head h2{font-size:22px;font-weight:900}
+.block-head .chip{margin-left:auto}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.field input[type=number]{width:100%;font:inherit;font-size:15px;color:var(--ink);background:var(--surface-2);border:1.5px solid transparent;border-radius:var(--radius-field);padding:12px 14px}
+.field input[type=number]:focus{outline:none;border-color:var(--action);background:var(--surface)}
+.field .sub{font-size:12.5px;font-weight:600;color:var(--text-4)}
+.item{display:flex;flex-direction:column;gap:14px;padding:18px;border-radius:20px;background:var(--surface-2)}
+.item textarea,.item input[type=text],.item input[type=number],.item select{background:var(--surface)}
+.grid2 .field,.grid3 .field{justify-content:flex-end}
+.item-head{display:flex;align-items:center;gap:10px}
+.item-head b{font-size:15px;font-weight:800}
+.item-head .tools{margin-left:auto;display:flex;gap:6px}
+.icon-btn{width:36px;height:36px;border-radius:50%;border:0;display:grid;place-items:center;background:var(--surface-3);color:var(--text-2);cursor:pointer}
+.icon-btn:hover{background:var(--surface-4)}
+.icon-btn svg{width:16px;height:16px}
+.icon-btn.danger:hover{background:var(--risk-bg);color:var(--risk)}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr) 36px;gap:10px;align-items:center}
+select{width:100%;font:inherit;font-size:15px;color:var(--ink);background:var(--surface-2);border:1.5px solid transparent;border-radius:var(--radius-field);padding:12px 14px}
+select:focus{outline:none;border-color:var(--action)}
+.drop{display:flex;align-items:center;gap:14px;padding:12px;border-radius:16px;background:var(--surface);min-height:72px}
+.drop img{width:56px;height:72px;object-fit:cover;border-radius:8px;box-shadow:0 4px 12px -6px rgba(0,0,0,.4)}
+.drop .meta2{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.drop .meta2 b{font-size:14px;font-weight:700}
+.drop .meta2 span{font-size:12.5px;color:var(--text-4)}
+.toggle{display:flex;align-items:center;gap:12px;font-weight:700;font-size:14px;color:var(--text-2);cursor:pointer}
+.toggle input{appearance:none;width:44px;height:26px;border-radius:999px;background:var(--surface-4);position:relative;cursor:pointer;transition:background var(--dur-fast)}
+.toggle input::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform var(--dur-fast) var(--ease-out)}
+.toggle input:checked{background:var(--ok)}
+.toggle input:checked::after{transform:translateX(18px)}
+.side{position:sticky;top:20px;display:flex;flex-direction:column;gap:14px;padding:18px;min-width:0}
+.side-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.side-head h2{font-size:20px;font-weight:900}
+.frame{position:relative;height:calc(100vh - 230px);min-height:420px;border-radius:18px;overflow:hidden;background:#0b1020}
+.frame iframe{position:absolute;top:0;left:0;width:166.67%;height:166.67%;border:0;transform:scale(.6);transform-origin:0 0}
+.side .bar{justify-content:center}
+.side .bar .pill{flex:1 1 0;justify-content:center}
+.checks{display:flex;flex-direction:column;gap:6px}
+.checks li{list-style:none;display:flex;gap:8px;align-items:center;font-size:13.5px;font-weight:600;color:var(--text-3)}
+.checks li svg{width:16px;height:16px;flex:none}
+.checks{margin:0;padding:0}
+@media (max-width:980px){.builder{grid-template-columns:minmax(0,1fr)}.side{position:static}.frame{height:70vh}}
+@media (max-width:620px){.grid2,.grid3{grid-template-columns:minmax(0,1fr)}.row2{grid-template-columns:minmax(0,1fr) 36px}.row2 input:nth-child(2){grid-column:1}}
+</style>
+</head>
+<body>
+<canvas id="sky" aria-hidden="true"></canvas>
+<main class="page">
+  <header class="glass hero split">
+    <div class="intro">
+      <p class="kicker">Aūno</p>
+      <h1>Review Builder</h1>
+      <p class="lede">Fill in the document, the changes, and the questions. The preview updates as you type. When it looks right, download the finished review and send it to your reviewers.</p>
+    </div>
+    <div class="actions">
+      <button class="pill primary" type="button" id="dl">Download: Review</button>
+      <button class="pill light" type="button" id="loadBtn">Open: Existing Review</button>
+      <button class="pill light hold" type="button" id="blank"><span>Hold To Start Blank</span></button>
+      <input type="file" id="loadFile" accept=".html,.json,text/html,application/json" hidden>
+    </div>
+  </header>
+
+  <div class="builder">
+    <div class="form" id="form"></div>
+    <aside class="glass side" aria-label="Live preview">
+      <div class="side-head"><h2>Live Preview</h2><button class="pill light small" type="button" id="openFull">Open: Full Preview</button></div>
+      <div class="frame"><iframe id="pv" title="Review preview" sandbox="allow-scripts allow-same-origin allow-modals"></iframe></div>
+      <ul class="checks" id="checks"></ul>
+    </aside>
+  </div>
+
+  <footer><span>Everything stays on this computer. Nothing is uploaded.</span><span>Review Builder <span id="bver"></span> · Built by <b>Aūno</b></span></footer>
+</main>
+
+<script>
+const TEMPLATE = __TEMPLATE_JSON__;
+const BUILDER_VERSION="1.0";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const I={
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 14l6-6 6 6"/></svg>',
+  down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10l6 6 6-6"/></svg>',
+  ok:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="var(--ok)"/><path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  warn:'<svg viewBox="0 0 24 24"><path d="M12 2.8 22.4 20.6H1.6z" fill="var(--caution)"/><path d="M12 9.5v5" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="17.6" r="1.3" fill="#fff"/></svg>'
+};
+
+/* ---------- read and write the REVIEW block inside a review page ---------- */
+const START="const REVIEW = ", END="\n/* ================== END OF EDITABLE BLOCK";
+function readReview(html){const a=html.indexOf(START),b=html.indexOf(END,a);if(a<0||b<0)throw new Error("No review block found");
+  let src=html.slice(a+START.length,b).trim().replace(/;\s*$/,"");return new Function("return ("+src+")")();}
+function writeReview(html,R){const a=html.indexOf(START),b=html.indexOf(END,a);
+  return html.slice(0,a)+START+JSON.stringify(R,null,2)+";"+html.slice(b);}
+
+/* ---------- state ---------- */
+const DRAFT="auno.review.builder";
+let R;
+try{const d=localStorage.getItem(DRAFT);if(d)R=JSON.parse(d);}catch(e){}
+if(!R)R=readReview(TEMPLATE);
+const blankReview=()=>({company:"",docType:"Procedure",docName:"",fromRev:"",toRev:"Rev A",author:"",authorRole:"",approverRole:"",effective:"On release",keepAnswersDays:7,fictional:false,lede:"",
+  summary:[["What It Does",""],["What Changes",""]],steps:["Walk each change. Tap any page to see it full size.","Answer the questions and pick your decision.","Copy your response or save it as a PDF, and send it back."],
+  stops:[{id:"c1",section:"",page:1,title:"",text:[""],around:[],look:[""],bottom:""}],questions:[{stop:"c1",q:"",why:""}]});
+
+/* ---------- form ---------- */
+const F=(label,key,opts={})=>{const v=opts.value!==undefined?opts.value:R[key];const sub=opts.sub?` <span class="sub">${opts.sub}</span>`:"";
+  return opts.area?`<div class="field"><label>${label}${sub}</label><textarea data-k="${key}" rows="${opts.rows||3}">${esc(v)}</textarea></div>`
+  :`<div class="field"><label>${label}${sub}</label><input type="${opts.type||"text"}" data-k="${key}" value="${esc(v)}"></div>`;};
+const itemTools=(kind,i,n)=>`<div class="tools"><button class="icon-btn" type="button" data-move="${kind}:${i}:-1" aria-label="Move up" ${i===0?"disabled":""}>${I.up}</button><button class="icon-btn" type="button" data-move="${kind}:${i}:1" aria-label="Move down" ${i===n-1?"disabled":""}>${I.down}</button><button class="icon-btn danger" type="button" data-del="${kind}:${i}" aria-label="Remove">${I.x}</button></div>`;
+
+function render(){
+  const stops=R.stops.map((s,i)=>`<div class="item" data-i="${i}">
+    <div class="item-head"><span class="chip dark">Change ${i+1}</span><b>${esc(s.title)||"&nbsp;"}</b>${itemTools("stops",i,R.stops.length)}</div>
+    <div class="grid3">${F("Title","",{value:s.title}).replace('data-k=""',`data-s="${i}:title"`)}${F("Section","",{value:s.section}).replace('data-k=""',`data-s="${i}:section"`)}${F("Page","",{value:s.page,type:"number"}).replace('data-k=""',`data-s="${i}:page"`)}</div>
+    ${F("New Wording","",{value:(s.text||[]).join("\n\n"),area:true,rows:4,sub:"Exactly as it will read. Blank line between paragraphs."}).replace('data-k=""',`data-s="${i}:text"`)}
+    ${F("Surrounding Text","",{value:(s.around||[]).join("\n\n"),area:true,rows:2,sub:"Optional. Shown above the change on Full Page."}).replace('data-k=""',`data-s="${i}:around"`)}
+    ${F("What To Look For","",{value:(s.look||[]).join("\n"),area:true,rows:3,sub:"One point per line."}).replace('data-k=""',`data-s="${i}:look"`)}
+    ${F("Bottom Line","",{value:s.bottom}).replace('data-k=""',`data-s="${i}:bottom"`)}
+    <div class="field"><label>Page Image <span class="sub">Optional. A screenshot of the real page, used for Zoom and Full Page.</span></label>
+      <div class="drop">${s.img?`<img src="${s.img}" alt="">`:""}<div class="meta2"><b>${s.img?"Image added":"No image"}</b><span>${s.img?"Saved inside the review file.":"The text above is shown instead."}</span></div>
+      <label class="pill light small" style="cursor:pointer">${s.img?"Replace":"Add: Image"}<input type="file" accept="image/*" data-img="${i}" hidden></label>${s.img?`<button class="pill light small" type="button" data-noimg="${i}">Remove</button>`:""}</div></div>
+  </div>`).join("");
+  const opts=R.stops.map((s,i)=>`<option value="${esc(s.id)}">Change ${i+1}${s.title?": "+esc(s.title):""}</option>`).join("");
+  const qs=R.questions.map((q,i)=>`<div class="item">
+    <div class="item-head"><span class="chip dark">Question ${i+1}</span>${itemTools("questions",i,R.questions.length)}</div>
+    ${F("Question","",{value:q.q}).replace('data-k=""',`data-q="${i}:q"`)}
+    <div class="grid2">${F("Why It Matters","",{value:q.why}).replace('data-k=""',`data-q="${i}:why"`)}
+      <div class="field"><label>Linked Change</label><select data-q="${i}:stop">${opts.replace(`value="${esc(q.stop)}"`,`value="${esc(q.stop)}" selected`)}</select></div></div>
+  </div>`).join("");
+  const sum=R.summary.map(([k,v],i)=>`<div class="row2"><input type="text" data-sum="${i}:0" value="${esc(k)}" aria-label="Summary label ${i+1}"><input type="text" data-sum="${i}:1" value="${esc(v)}" aria-label="Summary text ${i+1}"><button class="icon-btn danger" type="button" data-del="summary:${i}" aria-label="Remove">${I.x}</button></div>`).join("");
+  const steps=R.steps.map((t,i)=>`<div class="row2" style="grid-template-columns:minmax(0,1fr) 36px"><input type="text" data-step="${i}" value="${esc(t)}" aria-label="Step ${i+1}"><button class="icon-btn danger" type="button" data-del="steps:${i}" aria-label="Remove">${I.x}</button></div>`).join("");
+  $("form").innerHTML=`
+  <section class="card block"><div class="block-head"><h2>Document</h2><span class="chip plain">Step 1 Of 4</span></div>
+    <div class="grid2">${F("Document Name","docName")}${F("Company","company")}</div>
+    <div class="grid3">${F("Document Type","docType")}${F("Current Revision","fromRev",{sub:"If any"})}${F("New Revision","toRev")}</div>
+    <div class="grid3">${F("Written By","author")}${F("Author Team","authorRole")}${F("Approver Role","approverRole",{sub:"Optional"})}</div>
+    <div class="grid2">${F("Effective Date","effective")}${F("Keep Answers For (Days)","keepAnswersDays",{type:"number"})}</div>
+    ${F("Intro Line","lede",{area:true,rows:2})}
+    <label class="toggle"><input type="checkbox" data-k="fictional" ${R.fictional?"checked":""}>Mark As Fictional Example</label>
+  </section>
+  <section class="card block"><div class="block-head"><h2>Summary</h2><span class="chip plain">Step 2 Of 4</span></div>
+    <div class="field"><label>Summary Points <span class="sub">Label, then one line.</span></label><div style="display:flex;flex-direction:column;gap:10px">${sum}</div></div>
+    <div><button class="pill soft small" type="button" data-add="summary">${I.plus}Add: Point</button></div>
+    <div class="field"><label>Reviewer Steps</label><div style="display:flex;flex-direction:column;gap:10px">${steps}</div></div>
+    <div><button class="pill soft small" type="button" data-add="steps">${I.plus}Add: Step</button></div>
+  </section>
+  <section class="card block"><div class="block-head"><h2>Changes</h2><span class="chip plain">Step 3 Of 4</span></div>${stops}
+    <div><button class="pill soft small" type="button" data-add="stops">${I.plus}Add: Change</button></div></section>
+  <section class="card block"><div class="block-head"><h2>Questions</h2><span class="chip plain">Step 4 Of 4</span></div>${qs}
+    <div><button class="pill soft small" type="button" data-add="questions">${I.plus}Add: Question</button></div></section>`;
+  update();
+}
+
+/* ---------- preview, checks, autosave ---------- */
+let timer=0;
+function update(){clearTimeout(timer);timer=setTimeout(()=>{
+  try{localStorage.setItem(DRAFT,JSON.stringify(R));}catch(e){}
+  $("pv").srcdoc=build();
+  const c=[], ok=(t)=>c.push(`<li>${I.ok}${t}</li>`), w=(t)=>c.push(`<li>${I.warn}${t}</li>`);
+  R.docName.trim()?ok("Document named"):w("Add a document name");
+  R.stops.every(s=>s.title.trim()&&(s.text||[]).join("").trim())?ok(`${R.stops.length} change${R.stops.length===1?"":"s"} with wording`):w("Every change needs a title and wording");
+  R.questions.every(q=>q.q.trim())?ok(`${R.questions.length} question${R.questions.length===1?"":"s"} ready`):w("Every question needs text");
+  const n=R.stops.filter(s=>s.img).length; n?ok(`${n} page image${n===1?"":"s"} added`):c.push(`<li>${I.ok}Text excerpts shown (images optional)</li>`);
+  $("checks").innerHTML=c.join("");
+},300);}
+const build=()=>writeReview(TEMPLATE,R).replace(/<meta name="generator" content="[^"]*">/,`<meta name="generator" content="Aūno Review Builder ${BUILDER_VERSION}">`);
+const lines=(v,sep)=>v.split(sep).map(x=>x.trim()).filter(Boolean);
+
+document.addEventListener("input",e=>{const t=e.target,d=t.dataset;
+  if(d.k){R[d.k]=t.type==="checkbox"?t.checked:t.type==="number"?Number(t.value||0):t.value;}
+  else if(d.s){const[i,f]=d.s.split(":"),s=R.stops[+i];
+    if(f==="text"||f==="around")s[f]=lines(t.value,/\n\s*\n/);else if(f==="look")s[f]=lines(t.value,/\n/);else if(f==="page")s[f]=Number(t.value||1);else s[f]=t.value;
+    if(f==="title")t.closest(".item").querySelector(".item-head b").textContent=t.value;}
+  else if(d.q){const[i,f]=d.q.split(":");R.questions[+i][f]=t.value;}
+  else if(d.sum){const[i,j]=d.sum.split(":");R.summary[+i][+j]=t.value;}
+  else if(d.step!==undefined){R.steps[+d.step]=t.value;}
+  else return;update();});
+document.addEventListener("change",e=>{const t=e.target;
+  if(t.dataset.img!==undefined&&t.files[0]){const i=+t.dataset.img,rd=new FileReader();
+    rd.onload=()=>{R.stops[i].img=rd.result;delete R.stops[i].fullImg;render();};rd.readAsDataURL(t.files[0]);}
+  if(t.dataset.q&&t.tagName==="SELECT")update();});
+document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const d=b.dataset;
+  if(d.add){const k=d.add;
+    if(k==="summary")R.summary.push(["",""]);else if(k==="steps")R.steps.push("");
+    else if(k==="stops"){let n=R.stops.length+1;while(R.stops.some(s=>s.id==="c"+n))n++;R.stops.push({id:"c"+n,section:"",page:R.stops.length+1,title:"",text:[""],around:[],look:[""],bottom:""});}
+    else if(k==="questions")R.questions.push({stop:R.stops[0]?.id||"",q:"",why:""});
+    render();}
+  else if(d.del){const[k,i]=d.del.split(":");const arr=R[k];if(arr.length<=1&&(k==="stops"||k==="questions"))return;
+    const gone=arr.splice(+i,1)[0];if(k==="stops")R.questions.forEach(q=>{if(q.stop===gone.id)q.stop=R.stops[0].id;});render();}
+  else if(d.move){const[k,i,dir]=d.move.split(":");const a=R[k],x=+i,y=x+ +dir;if(y<0||y>=a.length)return;[a[x],a[y]]=[a[y],a[x]];render();}
+  else if(d.noimg!==undefined){delete R.stops[+d.noimg].img;render();}});
+
+const fileName=()=>{const clean=t=>String(t||"").replace(/[\\/:*?"<>|]+/g," ").replace(/\s+/g," ").trim();
+  const n=clean(R.docName),r=clean(R.toRev);return n?`${n}${r?" "+r:""} Review.html`:"Untitled Review.html";};
+$("bver").textContent=BUILDER_VERSION;
+$("dl").addEventListener("click",()=>{const name=fileName();
+  const url=URL.createObjectURL(new Blob([build()],{type:"text/html"}));const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);});
+$("openFull").addEventListener("click",()=>{const url=URL.createObjectURL(new Blob([build()],{type:"text/html"}));window.open(url,"_blank");});
+$("loadBtn").addEventListener("click",()=>$("loadFile").click());
+$("loadFile").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{R=/\.json$/i.test(f.name)?JSON.parse(t):readReview(t);if(!Array.isArray(R.stops)||!Array.isArray(R.questions))throw 0;render();}catch(err){$("checks").innerHTML=`<li>${I.warn}That file has no review in it to open.</li>`;}});e.target.value="";});
+(()=>{const b=$("blank");let st=0,raf=0;const HOLD=1500;
+  const tick=n=>{const p=Math.min(1,(n-st)/HOLD);b.style.setProperty("--p",p*100+"%");if(p>=1){up();R=blankReview();render();return;}raf=requestAnimationFrame(tick);};
+  const down=e=>{if(e.type==="keydown"&&(e.repeat||!(e.key===" "||e.key==="Enter")))return;e.preventDefault();st=performance.now();b.classList.add("holding");raf=requestAnimationFrame(tick);};
+  const up=()=>{cancelAnimationFrame(raf);b.classList.remove("holding");b.style.setProperty("--p","0%");};
+  b.addEventListener("pointerdown",down);["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,up));b.addEventListener("keydown",down);b.addEventListener("keyup",up);})();
+render();
+</script>
+__SKY_SCRIPT__
+</body>
+</html>

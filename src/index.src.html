@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-wall="aurora">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Give Me The Greenlight</title>
+<meta name="description" content="One page that walks a reviewer through a document and collects a clear sign off.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+__BASE_CSS__
+<style>
+.paths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.path{padding:clamp(24px,4vw,44px);display:flex;flex-direction:column;gap:14px}
+.path h2{font-size:24px;font-weight:900}
+.path p{color:var(--text-3);font-size:15.5px;flex:1}
+.path .pill{align-self:flex-start}
+.ways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:6px}
+.way{padding:16px 18px;border-radius:18px;background:var(--surface-2)}
+.way b{display:block;font-size:15px;font-weight:800}
+.way span{display:block;margin-top:4px;font-size:13.5px;color:var(--text-3)}
+@media (max-width:820px){.paths,.ways{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<canvas id="sky" aria-hidden="true"></canvas>
+<main class="page">
+  <header class="glass hero">
+    <p class="kicker">Aūno</p>
+    <h1>Give Me The Greenlight</h1>
+    <p class="lede">One page that walks a reviewer through a document, asks the questions that matter, and hands back a clear sign off they can paste into Slack, Teams, or email. No login, no server, nothing to install.</p>
+  </header>
+  <div class="paths">
+    <section class="card path">
+      <h2>See A Review</h2>
+      <p>Open the sample review as a reviewer would: walk the changes, answer the questions, and copy the response or save it as a PDF.</p>
+      <a class="pill primary" href="template.html">Open: Sample Review</a>
+    </section>
+    <section class="card path">
+      <h2>Build Your Own</h2>
+      <p>Fill in your document, changes, and questions with a live preview, then download a finished review ready to send.</p>
+      <a class="pill primary" href="builder.html">Open: Review Builder</a>
+    </section>
+  </div>
+  <section class="glass block" style="padding:clamp(24px,4vw,44px);display:flex;flex-direction:column;gap:12px">
+    <h2 style="font-size:22px;font-weight:900">Three Ways To Fill It In</h2>
+    <div class="ways">
+      <div class="way"><b>Review Builder</b><span>Type into a form. No install, no AI, nothing leaves your computer.</span></div>
+      <div class="way"><b>AI Prompt</b><span>Let an AI draft it from your document. Fastest, uses tokens.</span></div>
+      <div class="way"><b>Python Script</b><span>Build from a file and a folder of images. Good for repeat reviews.</span></div>
+    </div>
+  </section>
+  <footer><span>Fictional sample content. MIT licensed.</span><span><a href="https://github.com/Auno-World/Give-Me-The-Greenlight" style="color:inherit">View On GitHub</a> · Built by <b>Aūno</b></span></footer>
+</main>
+__SKY_SCRIPT__
+</body>
+</html>

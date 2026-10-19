@@ -182,6 +182,7 @@ textarea:focus,input:focus{outline:none;border-color:var(--action);background:va
 .q.missing textarea{border-color:var(--qc)}
 .q .need,.q .hint{color:var(--qc)}
 .hint{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--caution-text)}
+.hint[hidden]{display:none}
 .hint svg{width:16px;height:16px;flex:none}
 /* compact answered card */
 .q.compact{flex-direction:row;align-items:center;gap:14px;padding:14px 18px;border-radius:22px;flex-wrap:wrap}
@@ -276,12 +277,13 @@ footer b{font-weight:800}
   .stop-grid,.summary{grid-template-columns:minmax(0,1fr)!important}
   .notes{position:static}
   .q.compact > :not(.mini){display:flex!important}
+  .q.compact .opts,.q.compact .hint[hidden]{display:none!important}
   .q.compact .mini{display:none!important}
   .q{flex-direction:column!important}
   .print-only{display:block}
-  .answer{font-weight:700}
+  .answer{font-weight:700;white-space:pre-wrap}
   textarea,input{border:0!important;background:none!important;padding:0!important;resize:none}
-  .print-head{display:block;margin-bottom:8pt;font-size:10pt;color:#333}
+  .print-head{display:block;margin-bottom:8pt;font-size:10pt;color:#333;white-space:pre-line}
   .record{border:1.5px solid #000;border-radius:10px;padding:12pt}
   .chip.dark{background:#000!important;color:#fff!important}
 }
@@ -323,6 +325,7 @@ footer b{font-weight:800}
       <p class="lede" id="soLede"></p>
     </div>
     <div class="decs" role="radiogroup" aria-label="Overall decision" id="decs"></div>
+    <p class="hint" id="decisionHint" hidden></p>
     <div class="who">
       <div class="field"><label for="approver">Your Name</label><input type="text" id="approver" autocomplete="name"></div>
       <div class="field"><label for="date">Date</label><input type="date" id="date"></div>
@@ -334,9 +337,10 @@ footer b{font-weight:800}
       <button class="pill hold" type="button" id="clear" aria-describedby="clearHint"><span>Hold To Clear Answers</span></button>
     </div>
     <p class="msg" id="msg" role="status"></p>
+    <p class="hint" id="storageHint" hidden></p>
     <pre class="preview" id="preview" tabindex="0" aria-label="Response preview"></pre>
     <div class="tally" id="tally" aria-live="polite"></div>
-    <p class="note" id="clearHint">Your answers are saved on this device only and clear automatically after <span id="days"></span> days. Save As PDF opens the print window: choose Save As PDF there.</p>
+    <p class="note" id="clearHint">Your answers are saved on this device only and clear after <span id="days"></span> days without use when you next open this file. Save As PDF opens the print window: choose Save As PDF there.</p>
     <div class="print-only record" id="record"></div>
   </section>
 
@@ -359,73 +363,173 @@ footer b{font-weight:800}
      to image files saved next to this page (for example "page-2.png").
    - Questions attach to a stop by its id.                                       */
 const REVIEW = {
-  company: "Lumen Cell",
-  docType: "Procedure",
-  docName: "Incoming Cell Inspection Procedure",
-  fromRev: "Rev B",
-  toRev: "Rev C",
-  author: "M. Okafor",
-  authorRole: "Quality Engineering",
-  approverRole: "",   // Optional, for example "Program Director". Leave blank to send one file to many reviewers.
-                      // The Approver tile fills in live with the name each reviewer types at Sign Off.
-  effective: "On release",
-  keepAnswersDays: 7,
-  fictional: true,
-  lede: "Rev C is ready for your sign off. About ten minutes: read the summary, walk the five changes, answer four questions, then send your response to M. Okafor.",
-  summary: [
-    ["What It Does", "Sets the checks every battery cell passes when it arrives, before it goes into an electric bike pack."],
-    ["What Changes", "A tighter batch check, a voltage test on every cell, a new residue check, and simpler records."],
-    ["Impact On Inspectors", "More cells checked per batch, and a batch stops the moment one bad cell is found."],
-    ["Impact On Suppliers", "Whole batches can come back, so suppliers need to fix causes, not single cells."],
-    ["Training Needed", "A short session on the voltage test, the wipe test, and the new batch record."]
+  "company": "Lumen Cell",
+  "docType": "Procedure",
+  "docName": "Incoming Cell Inspection Procedure",
+  "fromRev": "Rev B",
+  "toRev": "Rev C",
+  "author": "M. Okafor",
+  "authorRole": "Quality Engineering",
+  "approverRole": "",
+  "effective": "On release",
+  "keepAnswersDays": 7,
+  "fictional": true,
+  "lede": "Rev C is ready for your sign off. About ten minutes: read the summary, walk the five changes, answer four questions, then send your response to M. Okafor.",
+  "summary": [
+    [
+      "What It Does",
+      "Sets the checks every battery cell passes when it arrives, before it goes into an electric bike pack."
+    ],
+    [
+      "What Changes",
+      "A tighter batch check, a voltage test on every cell, a new residue check, and simpler records."
+    ],
+    [
+      "Impact On Inspectors",
+      "More cells checked per batch, and a batch stops the moment one bad cell is found."
+    ],
+    [
+      "Impact On Suppliers",
+      "Whole batches can come back, so suppliers need to fix causes, not single cells."
+    ],
+    [
+      "Training Needed",
+      "A short session on the voltage test, the wipe test, and the new batch record."
+    ]
   ],
-  steps: [
+  "steps": [
     "Walk the five changes. Tap any page to see it full size.",
     "Answer the four questions and pick your decision.",
     "Copy your response or save it as a PDF, and send it to M. Okafor in Slack, Teams, or email."
   ],
-  stops: [
-    { id:"scope", section:"Section 1.1", page:1, title:"What This Covers",
-      text:["This procedure applies to every battery cell and every cell separator film received at Lumen Cell, from all approved suppliers and their sub-tier suppliers.",
-            "No cell or film batch may be moved to stock until it passes the checks in this procedure."],
-      around:["1. Purpose and Scope","This procedure explains how incoming battery cells are checked before they are used to build electric bike battery packs."],
-      look:["Separator film suppliers are now included, not only cell makers.","Sub-tier suppliers are covered, so a supplier's own vendors are in scope."],
-      bottom:"Everything that goes inside a cell now passes the same gate." },
-    { id:"sampling", section:"Section 6.2", page:2, title:"How Many Cells We Check",
-      text:["Pull a set number of cells from every batch: all cells for batches of 20 or fewer, 20 cells for batches of 21 to 100, and 32 cells for larger batches.",
-            "If even one sampled cell fails any check, the whole batch is rejected and set aside for review."],
-      around:["6. Inspection","6.1 Record the supplier, batch number, and quantity received before opening any packaging."],
-      look:["The sample size is fixed by batch size, so every inspector pulls the same number.","One bad cell rejects the whole batch. The old table allowed a few bad cells per batch."],
-      bottom:"The old rule let the two problem batches through. This one would have stopped both." },
-    { id:"voltage", section:"Section 6.3", page:3, title:"Voltage Check",
-      text:["Test the resting voltage of every sampled cell within 24 hours of arrival.",
-            "Reject any cell that reads below 3.60 volts or above 3.70 volts, and record each reading in the batch record."],
-      around:["6.3 Voltage Check","Use the calibrated meter at the receiving bench. Let cells rest at room temperature for at least one hour before testing."],
-      look:["Is a 24 hour window workable at the receiving bench?","Do the 3.60 to 3.70 volt limits match the cell maker's sheet?"],
-      bottom:"Voltage is the fastest early sign of a damaged or mislabeled cell." },
-    { id:"residue", section:"Section 6.4", page:4, title:"Residue Check",
-      text:["Look over each sampled cell for leaked liquid, staining, or swelling, then wipe the terminals with a clean dry swab.",
-            "Any wet or discolored swab rejects the batch."],
-      around:["6.4 Residue Check","Wear nitrile gloves and eye protection. Dispose of used swabs in the marked bin."],
-      look:["This is a new step. Nothing like it existed in Rev B.","The wipe test needs only a swab and takes under a minute per cell."],
-      bottom:"Leaked liquid was the root cause of both returns. Now it is caught at the door." },
-    { id:"records", section:"Section 7.1", page:5, title:"Keeping Records",
-      text:["Record every check in the batch record and keep it for 10 years.",
-            "The paper receiving log is retired. Results live only in the batch record."],
-      around:["7. Records","7.2 Rejected batches are tagged red and moved to the hold area until reviewed."],
-      look:["Is 10 years the right length of time?","Does the batch record capture everything the paper log did?"],
-      bottom:"One record per batch, one place to look." }
+  "stops": [
+    {
+      "id": "scope",
+      "section": "Section 1.1",
+      "page": 1,
+      "title": "What This Covers",
+      "text": [
+        "This procedure applies to every battery cell and every cell separator film received at Lumen Cell, from all approved suppliers and their sub-tier suppliers.",
+        "No cell or film batch may be moved to stock until it passes the checks in this procedure."
+      ],
+      "around": [
+        "1. Purpose and Scope",
+        "This procedure explains how incoming battery cells are checked before they are used to build electric bike battery packs."
+      ],
+      "look": [
+        "Separator film suppliers are now included, not only cell makers.",
+        "Sub-tier suppliers are covered, so a supplier's own vendors are in scope."
+      ],
+      "bottom": "Everything that goes inside a cell now passes the same gate."
+    },
+    {
+      "id": "sampling",
+      "section": "Section 6.2",
+      "page": 2,
+      "title": "How Many Cells We Check",
+      "text": [
+        "Pull a set number of cells from every batch: all cells for batches of 20 or fewer, 20 cells for batches of 21 to 100, and 32 cells for larger batches.",
+        "If even one sampled cell fails any check, the whole batch is rejected and set aside for review."
+      ],
+      "around": [
+        "6. Inspection",
+        "6.1 Record the supplier, batch number, and quantity received before opening any packaging."
+      ],
+      "look": [
+        "The sample size is fixed by batch size, so every inspector pulls the same number.",
+        "One bad cell rejects the whole batch. The old table allowed a few bad cells per batch."
+      ],
+      "bottom": "The old rule let the two problem batches through. This one would have stopped both."
+    },
+    {
+      "id": "voltage",
+      "section": "Section 6.3",
+      "page": 3,
+      "title": "Voltage Check",
+      "text": [
+        "Test the resting voltage of every sampled cell within 24 hours of arrival.",
+        "Reject any cell that reads below 3.60 volts or above 3.70 volts, and record each reading in the batch record."
+      ],
+      "around": [
+        "6.3 Voltage Check",
+        "Use the calibrated meter at the receiving bench. Let cells rest at room temperature for at least one hour before testing."
+      ],
+      "look": [
+        "Is a 24 hour window workable at the receiving bench?",
+        "Do the 3.60 to 3.70 volt limits match the cell maker's sheet?"
+      ],
+      "bottom": "Voltage is the fastest early sign of a damaged or mislabeled cell."
+    },
+    {
+      "id": "residue",
+      "section": "Section 6.4",
+      "page": 4,
+      "title": "Residue Check",
+      "text": [
+        "Look over each sampled cell for leaked liquid, staining, or swelling, then wipe the terminals with a clean dry swab.",
+        "Any wet or discolored swab rejects the batch."
+      ],
+      "around": [
+        "6.4 Residue Check",
+        "Wear nitrile gloves and eye protection. Dispose of used swabs in the marked bin."
+      ],
+      "look": [
+        "This is a new step. Nothing like it existed in Rev B.",
+        "The wipe test needs only a swab and takes under a minute per cell."
+      ],
+      "bottom": "Leaked liquid was the root cause of both returns. Now it is caught at the door."
+    },
+    {
+      "id": "records",
+      "section": "Section 7.1",
+      "page": 5,
+      "title": "Keeping Records",
+      "text": [
+        "Record every check in the batch record and keep it for 10 years.",
+        "The paper receiving log is retired. Results live only in the batch record."
+      ],
+      "around": [
+        "7. Records",
+        "7.2 Rejected batches are tagged red and moved to the hold area until reviewed."
+      ],
+      "look": [
+        "Is 10 years the right length of time?",
+        "Does the batch record capture everything the paper log did?"
+      ],
+      "bottom": "One record per batch, one place to look."
+    }
   ],
-  questions: [
-    { stop:"sampling", q:"Is the new batch check and rejection rule right?", why:"It is stricter, and suppliers will feel it." },
-    { stop:"voltage",  q:"Can every sampled cell be checked against these voltage limits?", why:"The bench needs the meter and time to do it." },
-    { stop:"residue",  q:"Is the residue check clear and workable?", why:"It is new, so inspectors will follow the words exactly." },
-    { stop:"records",  q:"Are the record changes ready to use?", why:"The batch record must hold the facts once the paper log ends." }
-  ]
+  "questions": [
+    {
+      "stop": "sampling",
+      "q": "Is the new batch check and rejection rule right?",
+      "why": "It is stricter, and suppliers will feel it.",
+      "id": "sampling"
+    },
+    {
+      "stop": "voltage",
+      "q": "Can every sampled cell be checked against these voltage limits?",
+      "why": "The bench needs the meter and time to do it.",
+      "id": "voltage"
+    },
+    {
+      "stop": "residue",
+      "q": "Is the residue check clear and workable?",
+      "why": "It is new, so inspectors will follow the words exactly.",
+      "id": "residue"
+    },
+    {
+      "stop": "records",
+      "q": "Are the record changes ready to use?",
+      "why": "The batch record must hold the facts once the paper log ends.",
+      "id": "records"
+    }
+  ],
+  "reviewId": "lumen-cell-incoming-cell-rev-c-example"
 };
 /* ================== END OF EDITABLE BLOCK ================== */
 
-const TEMPLATE_VERSION="1.0";
+const TEMPLATE_VERSION="1.1";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const R=REVIEW, revLabel=R.fromRev?`${R.fromRev} To ${R.toRev}`:R.toRev;
@@ -466,10 +570,12 @@ $("days").textContent=R.keepAnswersDays;
 $("ver").textContent="Version "+TEMPLATE_VERSION;
 
 const N=R.stops.length;
+const pageLabel=s=>`Page ${esc(s.page)}${Number.isSafeInteger(R.totalPages)&&R.totalPages>0?` Of ${R.totalPages}`:""}`;
+$("openFull").textContent=R.fullDocUrl?"Open: Full Document":"Open: First Change";
 $("walk").innerHTML=R.stops.map((s,i)=>{
   const sheetInner=s.img?`<img src="${esc(s.img)}" alt="${esc(R.docName)}, ${esc(s.section)}">`
-    :`<div class="meta"><span>${esc(R.docName)}, ${esc(R.toRev)} · ${esc(s.section)}</span><span class="num">Page ${s.page} Of ${N}</span></div>${s.text.map(p=>`<p>${esc(p)}</p>`).join("")}<div class="foot"><span>${esc(R.company)}${R.fictional?" · Fictional example":""}</span></div>`;
-  return `<article class="glass stop" id="stop-${s.id}">
+    :`<div class="meta"><span>${esc(R.docName)}, ${esc(R.toRev)} · ${esc(s.section)}</span><span class="num">${pageLabel(s)}</span></div>${s.text.map(p=>`<p>${esc(p)}</p>`).join("")}<div class="foot"><span>${esc(R.company)}${R.fictional?" · Fictional example":""}</span></div>`;
+  return `<article class="glass stop" id="stop-${esc(s.id)}">
     <div class="stop-head"><span class="chip dark">Change ${i+1} Of ${N}</span><span class="chip light">${esc(s.section)}</span></div>
     <h3>${esc(s.title)}</h3>
     <div class="stop-grid">
@@ -480,7 +586,7 @@ $("walk").innerHTML=R.stops.map((s,i)=>{
       <aside class="notes"><div><h4>What To Look For</h4><ul>${s.look.map(l=>`<li><span>${esc(l)}</span></li>`).join("")}</ul></div>
         <div class="bottom"><span>Bottom Line</span><p>${esc(s.bottom)}</p></div></aside>
     </div>
-    <div class="qs" data-for="${s.id}" style="display:flex;flex-direction:column;gap:14px"></div>
+    <div class="qs" data-for="${esc(s.id)}" style="display:flex;flex-direction:column;gap:14px"></div>
   </article>`;}).join("");
 
 R.questions.forEach((q,i)=>{
@@ -494,24 +600,35 @@ R.questions.forEach((q,i)=>{
     <p class="hint" id="h${n}" hidden>${ICON.warn}Add a comment so ${esc(R.author)} knows what to change.</p>
     <div class="print-only answer" id="pa${n}"></div>
     <div class="mini" id="mini${n}"></div>`;
-  document.querySelector(`.qs[data-for="${q.stop}"]`).appendChild(el);
+  [...document.querySelectorAll(".qs")].find(x=>x.dataset.for===q.stop).appendChild(el);
 });
 
 $("decs").innerHTML=Object.entries(DV).map(([k,v])=>`<button type="button" class="dec" role="radio" aria-checked="false" data-v="${k}">${ICON[v.ic]}<span class="txt"><b>${v.label}</b><small>${v.sub}</small></span><span class="tick">${ICON.tick}</span></button>`).join("");
 
 /* ---------- state ---------- */
-const KEY="review:"+R.docName+":"+R.toRev;
+const contentHash=()=>{const sorted=a=>[...a].sort((x,y)=>String(x.id).localeCompare(String(y.id)));const data=JSON.stringify([sorted(R.stops),sorted(R.questions)]);let h=2166136261;for(let i=0;i<data.length;i++)h=Math.imul(h^data.charCodeAt(i),16777619);return (h>>>0).toString(16).padStart(8,"0");};
+const KEY=R.reviewId?`review:${R.reviewId}:${contentHash()}`:"review:"+R.docName+":"+R.toRev;
+const qKey=(q,i)=>R.reviewId?q.id:String(i+1);
+const answer=(q,i)=>S.q[qKey(q,i)];
+const comment=(q,i)=>S.c[qKey(q,i)]||"";
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
 let S={q:{},c:{},compact:{},decision:"",approver:"",date:today(),general:"",t:Date.now()};
-try{const raw=JSON.parse(localStorage.getItem(KEY)||"null");
-  if(raw&&raw.t&&Date.now()-raw.t<R.keepAnswersDays*864e5)S=Object.assign(S,raw);else localStorage.removeItem(KEY);}catch(e){}
-const save=()=>{S.t=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}};
+let storageFailed=false;
+let restored=false;
+try{if(window.top===window){
+  const raw=JSON.parse(localStorage.getItem(KEY)||"null");
+  if(raw&&raw.t&&Date.now()-raw.t<R.keepAnswersDays*864e5){S=Object.assign(S,raw);restored=true;}else localStorage.removeItem(KEY);
+}}catch(e){storageFailed=true;}
+const save=()=>{S.t=Date.now();if(window.top!==window)return;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){storageFailed=true;$("storageHint").hidden=false;$("storageHint").innerHTML=`${ICON.warn}Your answers could not be saved in this browser. Copy your response before closing.`;}};
+if(restored)save();
 
-function needsComment(n){const v=S.q[n];return (v==="comments"||v==="change")&&!(S.c[n]||"").trim();}
-function counts(){const c={agree:0,comments:0,change:0,open:0};R.questions.forEach((_,i)=>{const v=S.q[i+1];c[v||"open"]++;});return c;}
+function needsComment(n){const q=R.questions[n-1],v=answer(q,n-1);return (v==="comments"||v==="change")&&!comment(q,n-1).trim();}
+function counts(){const c={agree:0,comments:0,change:0,open:0};R.questions.forEach((q,i)=>{const v=answer(q,i);c[v||"open"]++;});return c;}
+function missing(){const m=[];if(counts().open)m.push(`${counts().open} question${counts().open===1?"":"s"} unanswered`);const n=R.questions.filter((_,i)=>needsComment(i+1)).length;if(n)m.push(`${n} required comment${n===1?"":"s"} missing`);if(!S.decision)m.push("decision not selected");if(!S.approver.trim())m.push("name not entered");if(S.decision==="approve"&&counts().change&&!S.general.trim())m.push("General Comments needed for Approve with a requested change");return m;}
 
 function text(){
-  const c=counts(),L=[];
+  const c=counts(),L=[],m=missing();
+  if(m.length){L.push("DRAFT: Not A Sign Off");L.push("Missing: "+m.join("; "));L.push("");}
   L.push(`Review response: ${R.docName}, ${R.toRev}`);
   L.push(`To: ${R.author}`);
   L.push(`From: ${S.approver.trim()||"(name not entered)"} · ${S.date||today()}`);
@@ -519,15 +636,15 @@ function text(){
   L.push(`Questions: ${c.agree} agreed, ${c.comments} agreed with minor adjustments, ${c.change} need a change, ${c.open} open`);
   L.push("");
   R.questions.forEach((q,i)=>{const n=i+1,s=R.stops.find(x=>x.id===q.stop);
-    L.push(`Q${n}. ${q.q} (${s.section}): ${S.q[n]?QV[S.q[n]].text:"Open"}`);
-    if((S.c[n]||"").trim())L.push(`    Comment: ${S.c[n].trim()}`);});
+    const v=answer(q,i),c=comment(q,i);L.push(`Q${n}. ${q.q} (${s.section}): ${v?QV[v].text:"Open"}`);
+    if(c.trim())L.push(`    Comment: ${c.trim()}`);});
   L.push("");
   L.push(`General comments: ${S.general.trim()||"None"}`);
   return L.join("\n");
 }
 
 function paint(){
-  R.questions.forEach((q,i)=>{const n=i+1,v=S.q[n],el=$("q"+n);
+  R.questions.forEach((q,i)=>{const n=i+1,v=answer(q,i),c=comment(q,i),el=$("q"+n);
     el.dataset.v=v||"";
     el.querySelectorAll(".opt").forEach(b=>{const on=b.dataset.v===v;b.setAttribute("aria-checked",on);b.tabIndex=(on||(!v&&b.dataset.v==="agree"))?0:-1;});
     const k=v||"open";
@@ -535,13 +652,18 @@ function paint(){
     const need=v==="comments"||v==="change";
     $("cl"+n).innerHTML=need?'Comment <span class="need">(required)</span>':"Comment (optional)";
     const miss=needsComment(n);$("h"+n).hidden=!miss;el.classList.toggle("missing",miss);
-    if($("c"+n).value!==(S.c[n]||""))$("c"+n).value=S.c[n]||"";
-    $("pa"+n).textContent=`Answer: ${v?QV[v].text:"Open"}`;
+    if($("c"+n).value!==c)$("c"+n).value=c;
+    $("pa"+n).textContent=`Answer: ${v?QV[v].text:"Open"}${c.trim()?"\nComment: "+c.trim():""}`;
     const s=R.stops.find(x=>x.id===q.stop);
-    $("mini"+n).innerHTML=v?`<span style="color:${COLOR[v]};display:inline-flex">${ICON[v]}</span><span class="t">${esc(q.q)}<small>Question ${n} · ${esc(s.section)}${(S.c[n]||"").trim()?" · Comment added":""}</small></span><span class="a" style="color:${COLOR[v]}">${QV[v].word}</span><button class="pill soft small" type="button" data-edit="${n}">Edit</button>`:"";
-    el.classList.toggle("compact",!!(S.compact[n]&&v&&!miss));
+    $("mini"+n).innerHTML=v?`<span style="color:${COLOR[v]};display:inline-flex">${ICON[v]}</span><span class="t">${esc(q.q)}<small>Question ${n} · ${esc(s.section)}${c.trim()?" · Comment added":""}</small></span><span class="a" style="color:${COLOR[v]}">${QV[v].word}</span><button class="pill soft small" type="button" data-edit="${n}">Edit</button>`:"";
+    el.classList.toggle("compact",!!(S.compact[qKey(q,i)]&&v&&!miss));
   });
   document.querySelectorAll(".dec").forEach(b=>{const on=b.dataset.v===S.decision;b.setAttribute("aria-checked",on);b.tabIndex=(on||(!S.decision&&b.dataset.v==="approve"))?0:-1;});
+  const conflict=S.decision==="approve"&&counts().change>0;
+  $("decisionHint").hidden=!conflict;
+  $("decisionHint").innerHTML=conflict?`${ICON.warn}One or more questions need a change. Pick a different decision or explain in General Comments.`:"";
+  $("storageHint").hidden=!storageFailed;
+  if(storageFailed)$("storageHint").innerHTML=`${ICON.warn}Your answers could not be saved in this browser. Copy your response before closing.`;
   if($("approver").value!==S.approver)$("approver").value=S.approver;
   approverTile();
   if($("date").value!==S.date)$("date").value=S.date;
@@ -552,18 +674,18 @@ function paint(){
   $("tally").innerHTML=[["agree",c.agree,"agreed"],["comments",c.comments,"minor adjustments"],["change",c.change,"change"],["open",c.open,"open"]]
     .map(([k,v,w])=>`<span><span style="color:${COLOR[k]};display:inline-flex">${ICON[k]}</span>${v} ${w}</span>`).join("");
   $("preview").textContent=text();
-  $("record").innerHTML=`<b>Sign Off Record</b><br>Decision: ${esc(S.decision?DV[S.decision].text:"(not selected)")}<br>Approver: ${esc(S.approver.trim()||"(name not entered)")}<br>Date: ${esc(S.date)}<br>General comments: ${esc(S.general.trim()||"None")}`;
-  $("printHead").textContent=`${R.docName}, ${R.toRev} · Review response · Printed ${new Date().toLocaleDateString()}`;
+  $("record").innerHTML=`<b>${missing().length?"DRAFT: Not A Sign Off":"Sign Off Record"}</b>${missing().length?`<br>Missing: ${esc(missing().join("; "))}`:""}<br>Decision: ${esc(S.decision?DV[S.decision].text:"(not selected)")}<br>Approver: ${esc(S.approver.trim()||"(name not entered)")}<br>Date: ${esc(S.date)}<br>General comments: ${esc(S.general.trim()||"None")}`;
+  $("printHead").textContent=`${missing().length?"DRAFT: Not A Sign Off\nMissing: "+missing().join("; ")+"\n":""}${R.docName}, ${R.toRev} · Review response · Printed ${new Date().toLocaleDateString()}`;
 }
 
 /* ---------- interactions ---------- */
-function pickQ(n,v){S.q[n]=v;S.compact[n]=false;save();paint();
-  if(v==="agree"){setTimeout(()=>{S.compact[n]=true;save();paint();},450);}
+function pickQ(n,v){const key=qKey(R.questions[n-1],n-1);S.q[key]=v;S.compact[key]=false;save();paint();
+  if(v==="agree"){setTimeout(()=>{S.compact[key]=true;save();paint();},450);}
   else $("c"+n).focus();}
 document.addEventListener("click",e=>{
   const o=e.target.closest(".opt");if(o){pickQ(+o.dataset.q,o.dataset.v);return;}
   const d=e.target.closest(".dec");if(d){S.decision=d.dataset.v;save();paint();return;}
-  const ed=e.target.closest("[data-edit]");if(ed){const n=+ed.dataset.edit;S.compact[n]=false;save();paint();$("q"+n).querySelector('.opt[aria-checked="true"]').focus();return;}
+  const ed=e.target.closest("[data-edit]");if(ed){const n=+ed.dataset.edit;S.compact[qKey(R.questions[n-1],n-1)]=false;save();paint();$("q"+n).querySelector('.opt[aria-checked="true"]').focus();return;}
   const v=e.target.closest("[data-mode]");if(v){openViewer(+v.dataset.stop,v.dataset.mode);}
 });
 document.addEventListener("keydown",e=>{
@@ -575,15 +697,15 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Escape"&&!$("viewer").hidden)closeViewer();
 });
 document.addEventListener("input",e=>{const t=e.target;
-  if(/^c\d+$/.test(t.id)){S.c[+t.id.slice(1)]=t.value;}
+  if(/^c\d+$/.test(t.id)){const n=+t.id.slice(1);S.c[qKey(R.questions[n-1],n-1)]=t.value;}
   else if(t.id==="approver"){S.approver=t.value;approverTile();}else if(t.id==="date")S.date=t.value;else if(t.id==="general")S.general=t.value;else return;
   save();
   const n=/^c\d+$/.test(t.id)?+t.id.slice(1):0;
   if(n){const miss=needsComment(n);$("h"+n).hidden=!miss;$("q"+n).classList.toggle("missing",miss);}
-  $("preview").textContent=text();
+  paint();
 });
 document.addEventListener("focusout",e=>{const t=e.target;if(/^c\d+$/.test(t.id)){const n=+t.id.slice(1);
-  if(S.q[n]&&!needsComment(n)&&!$("q"+n).contains(e.relatedTarget)){S.compact[n]=true;save();paint();}}});
+  if(answer(R.questions[n-1],n-1)&&!needsComment(n)&&!$("q"+n).contains(e.relatedTarget)){S.compact[qKey(R.questions[n-1],n-1)]=true;save();paint();}}});
 
 /* copy */
 $("copy").addEventListener("click",()=>{const t=text(),ok=()=>{$("msg").style.color="var(--ok)";$("msg").textContent=`Copied. Paste it into Slack, Teams, or email to ${R.author}.`;};
@@ -597,7 +719,7 @@ $("pdf").addEventListener("click",()=>{paint();window.print();});
   const tick=now=>{const p=Math.min(1,(now-start)/HOLD);b.style.setProperty("--p",(p*100)+"%");if(p>=1){done();return;}raf=requestAnimationFrame(tick);};
   const down=e=>{if(e.type==="keydown"&&(e.repeat||!(e.key===" "||e.key==="Enter")))return;e.preventDefault();start=performance.now();b.classList.add("holding");b.querySelector("span").textContent="Keep Holding";raf=requestAnimationFrame(tick);};
   const up=()=>{cancelAnimationFrame(raf);b.classList.remove("holding");b.style.setProperty("--p","0%");b.querySelector("span").textContent="Hold To Clear Answers";};
-  const done=()=>{up();S={q:{},c:{},compact:{},decision:"",approver:"",date:today(),general:"",t:Date.now()};try{localStorage.removeItem(KEY);}catch(e){}paint();
+  const done=()=>{up();S={q:{},c:{},compact:{},decision:"",approver:"",date:today(),general:"",t:Date.now()};try{if(window.top===window)localStorage.removeItem(KEY);}catch(e){storageFailed=true;}paint();
     $("msg").style.color="var(--text-3)";$("msg").textContent="All answers cleared.";};
   b.addEventListener("pointerdown",down);["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,up));
   b.addEventListener("keydown",down);b.addEventListener("keyup",up);b.addEventListener("click",e=>e.preventDefault());})();
@@ -606,17 +728,17 @@ $("pdf").addEventListener("click",()=>{paint();window.print();});
 let lastFocus=null;
 function openViewer(i,mode){const s=R.stops[i];lastFocus=document.activeElement;
   let inner;
-  if(mode==="full"&&(s.fullImg||s.img))inner=`<img src="${esc(s.fullImg||s.img)}" alt="${esc(R.docName)}, page ${s.page}">`;
+  if(mode==="full"&&(s.fullImg||s.img))inner=`<img src="${esc(s.fullImg||s.img)}" alt="${esc(R.docName)}, page ${esc(s.page)}">`;
   else if(s.img&&mode==="zoom")inner=`<img src="${esc(s.img)}" alt="${esc(R.docName)}, ${esc(s.section)}">`;
   else{const body=mode==="full"
       ?`${(s.around||[]).slice(0,1).map(p=>`<p class="muted"><b>${esc(p)}</b></p>`).join("")}${(s.around||[]).slice(1).map(p=>`<p class="muted">${esc(p)}</p>`).join("")}<div class="changed">${s.text.map(p=>`<p>${esc(p)}</p>`).join("")}</div>`
       :s.text.map(p=>`<p>${esc(p)}</p>`).join("");
-    inner=`<div class="meta"><span>${esc(R.docName)}, ${esc(R.toRev)} · ${esc(s.section)}</span><span class="num">Page ${s.page} Of ${N}</span></div>${body}<div class="foot"><span>${esc(R.company)}${R.fictional?" · Fictional example":""}</span></div>`;}
+    inner=`<div class="meta"><span>${esc(R.docName)}, ${esc(R.toRev)} · ${esc(s.section)}</span><span class="num">${pageLabel(s)}</span></div>${body}<div class="foot"><span>${esc(R.company)}${R.fictional?" · Fictional example":""}</span></div>`;}
   $("vBody").innerHTML=`<div class="sheet">${inner}</div>`;$("viewer").hidden=false;document.body.style.overflow="hidden";$("vClose").focus();}
 function closeViewer(){$("viewer").hidden=true;document.body.style.overflow="";lastFocus&&lastFocus.focus();}
 $("vClose").addEventListener("click",closeViewer);
 $("viewer").addEventListener("click",e=>{if(e.target===$("viewer"))closeViewer();});
-$("openFull").addEventListener("click",()=>openViewer(0,"full"));
+$("openFull").addEventListener("click",()=>{if(R.fullDocUrl){try{const url=new URL(R.fullDocUrl);if(["http:","https:"].includes(url.protocol)){window.open(url.href,"_blank","noopener,noreferrer");return;}}catch(e){}}openViewer(0,"full");});
 
 paint();
 </script>

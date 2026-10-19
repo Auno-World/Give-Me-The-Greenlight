@@ -139,22 +139,27 @@
     {
       "stop": "sampling",
       "q": "Is the new batch check and rejection rule right?",
-      "why": "It is stricter, and suppliers will feel it."
+      "why": "It is stricter, and suppliers will feel it.",
+      "id": "sampling"
     },
     {
       "stop": "voltage",
       "q": "Can every sampled cell be checked against these voltage limits?",
-      "why": "The bench needs the meter and time to do it."
+      "why": "The bench needs the meter and time to do it.",
+      "id": "voltage"
     },
     {
       "stop": "residue",
       "q": "Is the residue check clear and workable?",
-      "why": "It is new, so inspectors will follow the words exactly."
+      "why": "It is new, so inspectors will follow the words exactly.",
+      "id": "residue"
     },
     {
       "stop": "records",
       "q": "Are the record changes ready to use?",
-      "why": "The batch record must hold the facts once the paper log ends."
+      "why": "The batch record must hold the facts once the paper log ends.",
+      "id": "records"
     }
-  ]
+  ],
+  "reviewId": "lumen-cell-incoming-cell-rev-c-example"
 }

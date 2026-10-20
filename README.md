@@ -14,7 +14,7 @@ One page that walks a reviewer through a document, asks the questions that matte
 - **A real sign off:** Approve, Approve With Comments, or Send Back For Changes, with their name and date.
 - **An easy way back:** Copy: My Response for Slack, Teams, or email, or Save As PDF for the record.
 
-Answers are saved only in the reviewer's own browser and clear after 7 days. The same file can go to as many reviewers as you like.
+Answers are saved only in the reviewer's own browser. They are deleted after 7 days without use, when the file is next opened. The same file can go to as many reviewers as you like.
 
 ## Pick Your Path
 
@@ -35,7 +35,7 @@ There are three ways to fill in a review. Pick the one that fits how your compan
 2. Fill in the document, summary, changes, and questions. Add a screenshot of each page if you want Zoom and Full Page to show the real page.
 3. Choose **Download: Review**. The file is named after your document, for example `Incoming Cell Inspection Procedure Rev C Review.html`.
 
-Your draft is kept in your browser while you work. Nothing is uploaded.
+Your draft is kept in your browser while you work. Use **Download: Draft Backup** to save a JSON copy. The Builder checks required fields, whole page numbers, unique change and question IDs, and question links before it downloads a review. You can optionally enter **Total Pages** for page labels and a **Full Document Link** to a web copy. Without the link, the review offers **Open: First Change**.
 
 ### AI Prompt
 
@@ -49,7 +49,11 @@ Your draft is kept in your browser while you work. Nothing is uploaded.
 python3 make_review.py examples/lumen-cell
 ```
 
-Put `review.json` and any page images in one folder and point the script at it. It builds a single finished file in that folder, with the images inside. Standard library only. Start from [`examples/lumen-cell/review.json`](examples/lumen-cell/review.json).
+Put `review.json` and any page images in one folder and point the script at it. It builds a single finished file in that folder, with the images inside. Standard library only. Start from [`examples/lumen-cell/review.json`](examples/lumen-cell/review.json). Each change needs an ID, title, wording, and whole page number of 1 or more. Each question needs a unique ID, text, and a link to an existing change. The script adds a `reviewId` and missing question IDs once, saving them back to `review.json` so later builds keep the same identity. Optional `totalPages` must be at least as large as every change page. Optional `fullDocUrl` must be an HTTP or HTTPS link. Local images must stay inside the review folder and be PNG, JPEG, GIF, or WebP files no larger than 5 MB each.
+
+## Privacy
+
+Answers are stored as plain text in the reviewer's browser. The page requests the Inter font from Google Fonts and falls back to system fonts offline. Images supplied as web links load from those sites; embed images for fully offline use. No review or answer content is uploaded by the page. The AI route follows the policies of whichever AI the author uses.
 
 ### Coding Agents
 

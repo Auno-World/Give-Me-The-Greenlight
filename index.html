@@ -182,6 +182,7 @@ textarea:focus,input:focus{outline:none;border-color:var(--action);background:va
 .q.missing textarea{border-color:var(--qc)}
 .q .need,.q .hint{color:var(--qc)}
 .hint{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--caution-text)}
+.hint[hidden]{display:none}
 .hint svg{width:16px;height:16px;flex:none}
 /* compact answered card */
 .q.compact{flex-direction:row;align-items:center;gap:14px;padding:14px 18px;border-radius:22px;flex-wrap:wrap}
@@ -276,12 +277,13 @@ footer b{font-weight:800}
   .stop-grid,.summary{grid-template-columns:minmax(0,1fr)!important}
   .notes{position:static}
   .q.compact > :not(.mini){display:flex!important}
+  .q.compact .opts,.q.compact .hint[hidden]{display:none!important}
   .q.compact .mini{display:none!important}
   .q{flex-direction:column!important}
   .print-only{display:block}
-  .answer{font-weight:700}
+  .answer{font-weight:700;white-space:pre-wrap}
   textarea,input{border:0!important;background:none!important;padding:0!important;resize:none}
-  .print-head{display:block;margin-bottom:8pt;font-size:10pt;color:#333}
+  .print-head{display:block;margin-bottom:8pt;font-size:10pt;color:#333;white-space:pre-line}
   .record{border:1.5px solid #000;border-radius:10px;padding:12pt}
   .chip.dark{background:#000!important;color:#fff!important}
 }

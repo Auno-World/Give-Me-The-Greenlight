@@ -76,6 +76,7 @@ select:focus{outline:none;border-color:var(--action)}
     </div>
     <div class="actions">
       <button class="pill primary" type="button" id="dl">Download: Review</button>
+      <button class="pill light" type="button" id="backup">Download: Draft Backup</button>
       <button class="pill light" type="button" id="loadBtn">Open: Existing Review</button>
       <button class="pill light hold" type="button" id="blank"><span>Hold To Start Blank</span></button>
       <input type="file" id="loadFile" accept=".html,.json,text/html,application/json" hidden>
@@ -86,17 +87,19 @@ select:focus{outline:none;border-color:var(--action)}
     <div class="form" id="form"></div>
     <aside class="glass side" aria-label="Live preview">
       <div class="side-head"><h2>Live Preview</h2><button class="pill light small" type="button" id="openFull">Open: Full Preview</button></div>
-      <div class="frame"><iframe id="pv" title="Review preview" sandbox="allow-scripts allow-same-origin allow-modals"></iframe></div>
+      <div class="frame"><iframe id="pv" title="Review preview" sandbox="allow-scripts"></iframe></div>
       <ul class="checks" id="checks"></ul>
+      <p class="sub" id="saveHint" role="status" hidden></p>
+      <p class="sub" id="sizeHint" role="status" hidden></p>
     </aside>
   </div>
 
-  <footer><span>Everything stays on this computer. Nothing is uploaded.</span><span>Review Builder <span id="bver"></span> · Built by <b>Aūno</b></span></footer>
+  <footer><span>Your draft stays in this browser. The page requests the Inter font from Google Fonts.</span><span>Review Builder <span id="bver"></span> · Built by <b>Aūno</b></span></footer>
 </main>
 
 <script>
 const TEMPLATE = __TEMPLATE_JSON__;
-const BUILDER_VERSION="1.0";
+const BUILDER_VERSION="1.1";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const I={
@@ -111,18 +114,22 @@ const I={
 /* ---------- read and write the REVIEW block inside a review page ---------- */
 const START="const REVIEW = ", END="\n/* ================== END OF EDITABLE BLOCK";
 function readReview(html){const a=html.indexOf(START),b=html.indexOf(END,a);if(a<0||b<0)throw new Error("No review block found");
-  let src=html.slice(a+START.length,b).trim().replace(/;\s*$/,"");return new Function("return ("+src+")")();}
+  let src=html.slice(a+START.length,b).trim().replace(/;\s*$/,"");return JSON.parse(src);}
+const scriptJSON=value=>JSON.stringify(value,null,2).replace(/[<>&\u2028\u2029]/g,c=>({"<":"\\u003c",">":"\\u003e","&":"\\u0026","\u2028":"\\u2028","\u2029":"\\u2029"}[c]));
 function writeReview(html,R){const a=html.indexOf(START),b=html.indexOf(END,a);
-  return html.slice(0,a)+START+JSON.stringify(R,null,2)+";"+html.slice(b);}
+  return html.slice(0,a)+START+scriptJSON(R)+";"+html.slice(b);}
 
 /* ---------- state ---------- */
 const DRAFT="auno.review.builder";
 let R;
 try{const d=localStorage.getItem(DRAFT);if(d)R=JSON.parse(d);}catch(e){}
 if(!R)R=readReview(TEMPLATE);
-const blankReview=()=>({company:"",docType:"Procedure",docName:"",fromRev:"",toRev:"Rev A",author:"",authorRole:"",approverRole:"",effective:"On release",keepAnswersDays:7,fictional:false,lede:"",
+const newId=()=>crypto.randomUUID?crypto.randomUUID():`review-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+function ensureIds(review){review.reviewId ||= newId();review.questions.forEach(q=>q.id ||= newId());}
+ensureIds(R);
+const blankReview=()=>({reviewId:newId(),company:"",docType:"Procedure",docName:"",fromRev:"",toRev:"Rev A",author:"",authorRole:"",approverRole:"",effective:"On release",keepAnswersDays:7,fictional:false,lede:"",
   summary:[["What It Does",""],["What Changes",""]],steps:["Walk each change. Tap any page to see it full size.","Answer the questions and pick your decision.","Copy your response or save it as a PDF, and send it back."],
-  stops:[{id:"c1",section:"",page:1,title:"",text:[""],around:[],look:[""],bottom:""}],questions:[{stop:"c1",q:"",why:""}]});
+  stops:[{id:"c1",section:"",page:1,title:"",text:[""],around:[],look:[""],bottom:""}],questions:[{id:newId(),stop:"c1",q:"",why:""}]});
 
 /* ---------- form ---------- */
 const F=(label,key,opts={})=>{const v=opts.value!==undefined?opts.value:R[key];const sub=opts.sub?` <span class="sub">${opts.sub}</span>`:"";
@@ -139,7 +146,7 @@ function render(){
     ${F("What To Look For","",{value:(s.look||[]).join("\n"),area:true,rows:3,sub:"One point per line."}).replace('data-k=""',`data-s="${i}:look"`)}
     ${F("Bottom Line","",{value:s.bottom}).replace('data-k=""',`data-s="${i}:bottom"`)}
     <div class="field"><label>Page Image <span class="sub">Optional. A screenshot of the real page, used for Zoom and Full Page.</span></label>
-      <div class="drop">${s.img?`<img src="${s.img}" alt="">`:""}<div class="meta2"><b>${s.img?"Image added":"No image"}</b><span>${s.img?"Saved inside the review file.":"The text above is shown instead."}</span></div>
+      <div class="drop">${s.img?`<img src="${esc(s.img)}" alt="">`:""}<div class="meta2"><b>${s.img?"Image added":"No image"}</b><span>${s.img?"Saved inside the review file.":"The text above is shown instead."}</span></div>
       <label class="pill light small" style="cursor:pointer">${s.img?"Replace":"Add: Image"}<input type="file" accept="image/*" data-img="${i}" hidden></label>${s.img?`<button class="pill light small" type="button" data-noimg="${i}">Remove</button>`:""}</div></div>
   </div>`).join("");
   const opts=R.stops.map((s,i)=>`<option value="${esc(s.id)}">Change ${i+1}${s.title?": "+esc(s.title):""}</option>`).join("");
@@ -157,6 +164,7 @@ function render(){
     <div class="grid3">${F("Document Type","docType")}${F("Current Revision","fromRev",{sub:"If any"})}${F("New Revision","toRev")}</div>
     <div class="grid3">${F("Written By","author")}${F("Author Team","authorRole")}${F("Approver Role","approverRole",{sub:"Optional"})}</div>
     <div class="grid2">${F("Effective Date","effective")}${F("Keep Answers For (Days)","keepAnswersDays",{type:"number"})}</div>
+    <div class="grid2">${F("Total Pages","totalPages",{type:"number",sub:"Optional"})}${F("Full Document Link","fullDocUrl",{sub:"Optional web link"})}</div>
     ${F("Intro Line","lede",{area:true,rows:2})}
     <label class="toggle"><input type="checkbox" data-k="fictional" ${R.fictional?"checked":""}>Mark As Fictional Example</label>
   </section>
@@ -175,13 +183,30 @@ function render(){
 
 /* ---------- preview, checks, autosave ---------- */
 let timer=0;
+const nonempty=v=>typeof v==="string"&&!!v.trim();
+function problems(r){const out=[];
+  for(const k of ["docName","toRev","author"])if(!nonempty(r[k]))out.push(`${k==="docName"?"Document name":k==="toRev"?"New revision":"Written By"} is required`);
+  if(!Array.isArray(r.summary)||!r.summary.length||r.summary.some(x=>!Array.isArray(x)||x.length<2||!nonempty(x[0])||!nonempty(x[1])))out.push("Add complete summary points");
+  if(!Array.isArray(r.steps)||!r.steps.length||r.steps.some(x=>!nonempty(x)))out.push("Add reviewer steps");
+  if(!Array.isArray(r.stops)||!r.stops.length)out.push("Add a change");
+  if(!Array.isArray(r.questions)||!r.questions.length)out.push("Add a question");
+  const stops=new Set(),questions=new Set();
+  for(const [i,s] of (r.stops||[]).entries()){if(!s||!nonempty(s.id)||stops.has(s.id))out.push(`Change ${i+1} needs a unique id`);else stops.add(s.id);
+    if(!s||!nonempty(s.title)||!Array.isArray(s.text)||!s.text.length||s.text.some(x=>!nonempty(x)))out.push(`Change ${i+1} needs a title and wording`);
+    if(!s||!Number.isSafeInteger(s.page)||s.page<1)out.push(`Change ${i+1} needs a whole page number of 1 or more`);}
+  for(const [i,q] of (r.questions||[]).entries()){if(!q||!nonempty(q.id)||questions.has(q.id))out.push(`Question ${i+1} needs a unique id`);else questions.add(q.id);
+    if(!q||!nonempty(q.q))out.push(`Question ${i+1} needs text`);
+    if(!q||!stops.has(q.stop))out.push(`Question ${i+1} needs a linked change`);}
+  if(r.totalPages!=null&&r.totalPages!==""&&(!Number.isSafeInteger(r.totalPages)||r.totalPages<1||r.stops?.some(s=>s.page>r.totalPages)))out.push("Total Pages must be a whole number at least as large as every change page");
+  if(r.fullDocUrl){try{if(!["http:","https:"].includes(new URL(r.fullDocUrl).protocol))throw 0;}catch(e){out.push("Full Document Link must be a web link");}}
+  return out;}
 function update(){clearTimeout(timer);timer=setTimeout(()=>{
-  try{localStorage.setItem(DRAFT,JSON.stringify(R));}catch(e){}
+  const serialized=JSON.stringify(R);
+  try{localStorage.setItem(DRAFT,serialized);$("saveHint").hidden=true;}catch(e){$("saveHint").hidden=false;$("saveHint").textContent="Your draft could not be saved in this browser. Download a backup before closing.";}
+  const large=new Blob([serialized]).size>4*1024*1024;$("sizeHint").hidden=!large;if(large)$("sizeHint").textContent="This draft is over 4 MB. Try smaller images to keep it easy to save.";
   $("pv").srcdoc=build();
-  const c=[], ok=(t)=>c.push(`<li>${I.ok}${t}</li>`), w=(t)=>c.push(`<li>${I.warn}${t}</li>`);
-  R.docName.trim()?ok("Document named"):w("Add a document name");
-  R.stops.every(s=>s.title.trim()&&(s.text||[]).join("").trim())?ok(`${R.stops.length} change${R.stops.length===1?"":"s"} with wording`):w("Every change needs a title and wording");
-  R.questions.every(q=>q.q.trim())?ok(`${R.questions.length} question${R.questions.length===1?"":"s"} ready`):w("Every question needs text");
+  const c=[], ok=(t)=>c.push(`<li>${I.ok}${esc(t)}</li>`), w=(t)=>c.push(`<li>${I.warn}${esc(t)}</li>`);
+  const issues=problems(R);issues.length?issues.forEach(w):ok("Review ready to download");
   const n=R.stops.filter(s=>s.img).length; n?ok(`${n} page image${n===1?"":"s"} added`):c.push(`<li>${I.ok}Text excerpts shown (images optional)</li>`);
   $("checks").innerHTML=c.join("");
 },300);}
@@ -189,9 +214,9 @@ const build=()=>writeReview(TEMPLATE,R).replace(/<meta name="generator" content=
 const lines=(v,sep)=>v.split(sep).map(x=>x.trim()).filter(Boolean);
 
 document.addEventListener("input",e=>{const t=e.target,d=t.dataset;
-  if(d.k){R[d.k]=t.type==="checkbox"?t.checked:t.type==="number"?Number(t.value||0):t.value;}
+  if(d.k){R[d.k]=t.type==="checkbox"?t.checked:t.type==="number"?(d.k==="totalPages"&&!t.value?null:Number(t.value||0)):t.value;}
   else if(d.s){const[i,f]=d.s.split(":"),s=R.stops[+i];
-    if(f==="text"||f==="around")s[f]=lines(t.value,/\n\s*\n/);else if(f==="look")s[f]=lines(t.value,/\n/);else if(f==="page")s[f]=Number(t.value||1);else s[f]=t.value;
+    if(f==="text"||f==="around")s[f]=lines(t.value,/\n\s*\n/);else if(f==="look")s[f]=lines(t.value,/\n/);else if(f==="page")s[f]=Number(t.value||0);else s[f]=t.value;
     if(f==="title")t.closest(".item").querySelector(".item-head b").textContent=t.value;}
   else if(d.q){const[i,f]=d.q.split(":");R.questions[+i][f]=t.value;}
   else if(d.sum){const[i,j]=d.sum.split(":");R.summary[+i][+j]=t.value;}
@@ -205,7 +230,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)r
   if(d.add){const k=d.add;
     if(k==="summary")R.summary.push(["",""]);else if(k==="steps")R.steps.push("");
     else if(k==="stops"){let n=R.stops.length+1;while(R.stops.some(s=>s.id==="c"+n))n++;R.stops.push({id:"c"+n,section:"",page:R.stops.length+1,title:"",text:[""],around:[],look:[""],bottom:""});}
-    else if(k==="questions")R.questions.push({stop:R.stops[0]?.id||"",q:"",why:""});
+    else if(k==="questions")R.questions.push({id:newId(),stop:R.stops[0]?.id||"",q:"",why:""});
     render();}
   else if(d.del){const[k,i]=d.del.split(":");const arr=R[k];if(arr.length<=1&&(k==="stops"||k==="questions"))return;
     const gone=arr.splice(+i,1)[0];if(k==="stops")R.questions.forEach(q=>{if(q.stop===gone.id)q.stop=R.stops[0].id;});render();}
@@ -215,11 +240,13 @@ document.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)r
 const fileName=()=>{const clean=t=>String(t||"").replace(/[\\/:*?"<>|]+/g," ").replace(/\s+/g," ").trim();
   const n=clean(R.docName),r=clean(R.toRev);return n?`${n}${r?" "+r:""} Review.html`:"Untitled Review.html";};
 $("bver").textContent=BUILDER_VERSION;
-$("dl").addEventListener("click",()=>{const name=fileName();
-  const url=URL.createObjectURL(new Blob([build()],{type:"text/html"}));const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);});
+function download(content,name,type){const url=URL.createObjectURL(new Blob([content],{type}));const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
+$("dl").addEventListener("click",()=>{const issues=problems(R);if(issues.length){$("checks").innerHTML=issues.map(x=>`<li>${I.warn}${esc(x)}</li>`).join("");$("checks").scrollIntoView({behavior:"smooth"});return;}const name=fileName();
+  download(build(),name,"text/html");});
+$("backup").addEventListener("click",()=>download(JSON.stringify(R,null,2),fileName().replace(/ Review\.html$/, " Draft Backup.json"),"application/json"));
 $("openFull").addEventListener("click",()=>{const url=URL.createObjectURL(new Blob([build()],{type:"text/html"}));window.open(url,"_blank");});
 $("loadBtn").addEventListener("click",()=>$("loadFile").click());
-$("loadFile").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{R=/\.json$/i.test(f.name)?JSON.parse(t):readReview(t);if(!Array.isArray(R.stops)||!Array.isArray(R.questions))throw 0;render();}catch(err){$("checks").innerHTML=`<li>${I.warn}That file has no review in it to open.</li>`;}});e.target.value="";});
+$("loadFile").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{try{const next=/\.json$/i.test(f.name)?JSON.parse(t):readReview(t);if(!next||!Array.isArray(next.stops)||!Array.isArray(next.questions)||!Array.isArray(next.summary)||!Array.isArray(next.steps)||next.stops.some(s=>!s||typeof s!=="object")||next.questions.some(q=>!q||typeof q!=="object"))throw 0;ensureIds(next);R=next;render();}catch(err){$("checks").innerHTML=`<li>${I.warn}That file has no review in it to open.</li>`;}});e.target.value="";});
 (()=>{const b=$("blank");let st=0,raf=0;const HOLD=1500;
   const tick=n=>{const p=Math.min(1,(n-st)/HOLD);b.style.setProperty("--p",p*100+"%");if(p>=1){up();R=blankReview();render();return;}raf=requestAnimationFrame(tick);};
   const down=e=>{if(e.type==="keydown"&&(e.repeat||!(e.key===" "||e.key==="Enter")))return;e.preventDefault();st=performance.now();b.classList.add("holding");raf=requestAnimationFrame(tick);};

@@ -609,15 +609,18 @@ $("decs").innerHTML=Object.entries(DV).map(([k,v])=>`<button type="button" class
 const contentHash=()=>{const sorted=a=>[...a].sort((x,y)=>String(x.id).localeCompare(String(y.id)));const data=JSON.stringify([sorted(R.stops),sorted(R.questions)]);let h=2166136261;for(let i=0;i<data.length;i++)h=Math.imul(h^data.charCodeAt(i),16777619);return (h>>>0).toString(16).padStart(8,"0");};
 const KEY=R.reviewId?`review:${R.reviewId}:${contentHash()}`:"review:"+R.docName+":"+R.toRev;
 const qKey=(q,i)=>R.reviewId?q.id:String(i+1);
-const answer=(q,i)=>S.q[qKey(q,i)];
-const comment=(q,i)=>S.c[qKey(q,i)]||"";
+const map=o=>Object.assign(Object.create(null),o&&typeof o==="object"?o:{});
+const own=(o,k)=>Object.prototype.hasOwnProperty.call(o,k)?o[k]:undefined;
+const answer=(q,i)=>own(S.q,qKey(q,i));
+const comment=(q,i)=>own(S.c,qKey(q,i))||"";
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
-let S={q:{},c:{},compact:{},decision:"",approver:"",date:today(),general:"",t:Date.now()};
+const fresh=()=>({q:map(),c:map(),compact:map(),decision:"",approver:"",date:today(),general:"",t:Date.now()});
+let S=fresh();
 let storageFailed=false;
 let restored=false;
 try{if(window.top===window){
   const raw=JSON.parse(localStorage.getItem(KEY)||"null");
-  if(raw&&raw.t&&Date.now()-raw.t<R.keepAnswersDays*864e5){S=Object.assign(S,raw);restored=true;}else localStorage.removeItem(KEY);
+  if(raw&&raw.t&&Date.now()-raw.t<R.keepAnswersDays*864e5){S=Object.assign(S,raw);S.q=map(raw.q);S.c=map(raw.c);S.compact=map(raw.compact);restored=true;}else localStorage.removeItem(KEY);
 }}catch(e){storageFailed=true;}
 const save=()=>{S.t=Date.now();if(window.top!==window)return;try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){storageFailed=true;$("storageHint").hidden=false;$("storageHint").innerHTML=`${ICON.warn}Your answers could not be saved in this browser. Copy your response before closing.`;}};
 if(restored)save();
@@ -656,7 +659,7 @@ function paint(){
     $("pa"+n).textContent=`Answer: ${v?QV[v].text:"Open"}${c.trim()?"\nComment: "+c.trim():""}`;
     const s=R.stops.find(x=>x.id===q.stop);
     $("mini"+n).innerHTML=v?`<span style="color:${COLOR[v]};display:inline-flex">${ICON[v]}</span><span class="t">${esc(q.q)}<small>Question ${n} · ${esc(s.section)}${c.trim()?" · Comment added":""}</small></span><span class="a" style="color:${COLOR[v]}">${QV[v].word}</span><button class="pill soft small" type="button" data-edit="${n}">Edit</button>`:"";
-    el.classList.toggle("compact",!!(S.compact[qKey(q,i)]&&v&&!miss));
+    el.classList.toggle("compact",!!(own(S.compact,qKey(q,i))&&v&&!miss));
   });
   document.querySelectorAll(".dec").forEach(b=>{const on=b.dataset.v===S.decision;b.setAttribute("aria-checked",on);b.tabIndex=(on||(!S.decision&&b.dataset.v==="approve"))?0:-1;});
   const conflict=S.decision==="approve"&&counts().change>0;
@@ -674,7 +677,7 @@ function paint(){
   $("tally").innerHTML=[["agree",c.agree,"agreed"],["comments",c.comments,"minor adjustments"],["change",c.change,"change"],["open",c.open,"open"]]
     .map(([k,v,w])=>`<span><span style="color:${COLOR[k]};display:inline-flex">${ICON[k]}</span>${v} ${w}</span>`).join("");
   $("preview").textContent=text();
-  $("record").innerHTML=`<b>${missing().length?"DRAFT: Not A Sign Off":"Sign Off Record"}</b>${missing().length?`<br>Missing: ${esc(missing().join("; "))}`:""}<br>Decision: ${esc(S.decision?DV[S.decision].text:"(not selected)")}<br>Approver: ${esc(S.approver.trim()||"(name not entered)")}<br>Date: ${esc(S.date)}<br>General comments: ${esc(S.general.trim()||"None")}`;
+  $("record").innerHTML=`<b>${missing().length?"DRAFT: Not A Sign Off":"Sign Off Record"}</b>${missing().length?`<br>Missing: ${esc(missing().join("; "))}`:""}<br>Decision: ${esc(S.decision?DV[S.decision].text:"(not selected)")}<br>Approver: ${esc(S.approver.trim()||"(name not entered)")}<br>Date: ${esc(S.date||today())}<br>General comments: ${esc(S.general.trim()||"None")}`;
   $("printHead").textContent=`${missing().length?"DRAFT: Not A Sign Off\nMissing: "+missing().join("; ")+"\n":""}${R.docName}, ${R.toRev} · Review response · Printed ${new Date().toLocaleDateString()}`;
 }
 
@@ -719,7 +722,7 @@ $("pdf").addEventListener("click",()=>{paint();window.print();});
   const tick=now=>{const p=Math.min(1,(now-start)/HOLD);b.style.setProperty("--p",(p*100)+"%");if(p>=1){done();return;}raf=requestAnimationFrame(tick);};
   const down=e=>{if(e.type==="keydown"&&(e.repeat||!(e.key===" "||e.key==="Enter")))return;e.preventDefault();start=performance.now();b.classList.add("holding");b.querySelector("span").textContent="Keep Holding";raf=requestAnimationFrame(tick);};
   const up=()=>{cancelAnimationFrame(raf);b.classList.remove("holding");b.style.setProperty("--p","0%");b.querySelector("span").textContent="Hold To Clear Answers";};
-  const done=()=>{up();S={q:{},c:{},compact:{},decision:"",approver:"",date:today(),general:"",t:Date.now()};try{if(window.top===window)localStorage.removeItem(KEY);}catch(e){storageFailed=true;}paint();
+  const done=()=>{up();S=fresh();try{if(window.top===window)localStorage.removeItem(KEY);}catch(e){storageFailed=true;}paint();
     $("msg").style.color="var(--text-3)";$("msg").textContent="All answers cleared.";};
   b.addEventListener("pointerdown",down);["pointerup","pointerleave","pointercancel"].forEach(t=>b.addEventListener(t,up));
   b.addEventListener("keydown",down);b.addEventListener("keyup",up);b.addEventListener("click",e=>e.preventDefault());})();
